@@ -148,9 +148,9 @@ dump_packet(struct rte_mbuf *m)
 		eth->dst[0], eth->dst[1], eth->dst[2], eth->dst[3], eth->dst[4], eth->dst[5]);
 	printf("  src:%02x:%02x:%02x:%02x:%02x:%02x\n",
 		eth->src[0], eth->src[1], eth->src[2], eth->src[3], eth->src[4], eth->src[5]);
-	printf("  type:%04x\n", rte_cpu_to_be_16(eth->type));
+	printf("  type:%04x\n", rte_be_to_cpu_16(eth->type));
 
-	if (eth->type != rte_cpu_to_be_16(eth_ipv4))
+	if (rte_be_to_cpu_16(eth->type) != eth_ipv4)
 		return 0;
 
 	ip = rte_pktmbuf_mtod_offset(m, struct ip4_hdr *, sizeof(*eth));
@@ -192,7 +192,9 @@ bridge_main_loop(void)
 			for (i = 0; i < nb_rx; i++) {
 				m = pkts_burst[i];
 				rte_prefetch0(rte_pktmbuf_mtod(m, void *));
+				printf("port %d\n", rx_portid);
 				dump_packet(m);
+				printf("\n");
 				rte_pktmbuf_free(m);
 			}
 		}
